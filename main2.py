@@ -55,22 +55,63 @@ bulletX_change = 0
 bulletY_change = 10
 bullet_state = "ready"
 
-# Score
-
-score_value = 0
-font = pygame.font.Font('freesansbold.ttf', 32)
-
-textX = 10
-testY = 10
+# Sentence text
+sentence_text = pygame.font.Font('freesansbold.ttf', 20)
+prepY = 0
 
 # Game Over
 over_font = pygame.font.Font('freesansbold.ttf', 64)
 
+# Hit count
+hit_count = 0
 
-def show_score(x, y):
-    score = font.render("Score : " + str(score_value), True, (255, 255, 255))
-    screen.blit(score, (x, y))
+# display main page
+first_Page = pygame.font.Font('freesansbold.ttf', 65)
+description_font = pygame.font.Font('freesansbold.ttf', 15)
 
+#button for first screen/page   
+playFont = pygame.font.Font('freesansbold.ttf', 20)
+
+# draw text to screen
+def draw_text(surface, text, size, x, y, color):
+    font = pygame.font.Font(pygame.font.match_font('freesansbold.ttf'), size)
+    text_surface = font.render(text, True, color)
+    text_rect = text_surface.get_rect()
+    text_rect.midtop = (x, y)
+    surface.blit(text_surface, text_rect)
+
+# display main page/screen
+def main_page():
+    # RGB = Red, Green, Blue
+    screen.fill((0, 0, 0))
+    # Background Image
+    screen.blit(background, (0, 0))
+
+    # display title
+    title = first_Page.render("Word Invader", True, (255, 255, 255))
+    screen.blit(title, (185, 185))
+
+    # display description
+    description = description_font.render("A game designed to help high school students prepare for the College Board’s SAT", True, (255, 255, 255))
+    screen.blit(description, (100, 260))
+    description2 = description_font.render("Reading Section by playing a modified version of Space Invaders (1978) to", True, (255, 255, 255))
+    screen.blit(description2, (125, 280))
+    description3 = description_font.render("practice their knowledge of common vocabulary words in said test.", True, (255, 255, 255))
+    screen.blit(description3, (140, 300))
+    
+    # display CTA (call to action)
+    draw_text(screen, "press [ENTER] to begin", 25, 390, 365, (220, 220, 220))
+
+showMainScreen = True
+while showMainScreen:
+    
+    main_page()
+    pygame.display.flip()
+
+    for event in pygame.event.get():
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_RETURN:
+                showMainScreen = False
 
 def game_over_text():
     over_text = over_font.render("GAME OVER", True, (255, 255, 255))
@@ -99,17 +140,23 @@ def isCollision(enemyX, enemyY, bulletX, bulletY):
         return False
 
 
+# Display sentence
+def prep_sentence(prepY):
+    sentence = sentence_text.render("A transportation [ planner's, ] job may include counting traffic.", True, (255, 255, 255))
+    screen.blit(sentence, (85, prepY))
+
 # Game Loop
 running = True
-while running:
+while running: # main game loop
 
     # RGB = Red, Green, Blue
     screen.fill((0, 0, 0))
+
     # Background Image
     screen.blit(background, (0, 0))
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            running = False
+            running = False  
 
         # if keystroke is pressed check whether its right or left
         if event.type == pygame.KEYDOWN:
@@ -128,10 +175,9 @@ while running:
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
                 playerX_change = 0
-
+    
     # 5 = 5 + -0.1 -> 5 = 5 - 0.1
     # 5 = 5 + 0.1
-
     playerX += playerX_change
     if playerX <= 0:
         playerX = 0
@@ -141,10 +187,13 @@ while running:
     # Enemy Movement
     for i in range(num_of_enemies):
 
+        prep_sentence(25)
+
         # Game Over
-        if enemyY[i] > 440:
+        if hit_count >= 3:
             for j in range(num_of_enemies):
                 enemyY[j] = 2000
+            prepY = 0
             game_over_text()
             break
 
@@ -163,9 +212,8 @@ while running:
             explosionSound.play()
             bulletY = 480
             bullet_state = "ready"
-            score_value += 1
-            enemyX[i] = random.randint(0, 736)
-            enemyY[i] = random.randint(50, 150)
+            hit_count += 1
+            enemyY[i] = 1000
 
         enemy(enemyX[i], enemyY[i], i)
 
@@ -179,5 +227,4 @@ while running:
         bulletY -= bulletY_change
 
     player(playerX, playerY)
-    show_score(textX, testY)
     pygame.display.update()
